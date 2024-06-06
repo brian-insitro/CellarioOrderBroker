@@ -1,4 +1,5 @@
 from WorkOrder import WorkOrder
+import csv
 
 class WorkOrder_Dose(WorkOrder):
     order_type = "Dose"
@@ -72,3 +73,15 @@ class WorkOrder_Dose(WorkOrder):
     def process(cls, data):
         print("Processing Dose Work Order")
         # Add processing logic here
+        
+        csv_filename = 'toEcho.csv'
+        csv_headers = ['Source Plate Name', 'Source Well', 'Destination Plate Name', 'Destination Well', 'Transfer Volume', 'Comment']
+        json_headers = cls.schema["properties"]["Transfers"]["items"]["properties"].keys()
+
+        # Convert to csv
+        with open(csv_filename, mode='w', newline='') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=csv_headers)
+            writer.writeheader()
+            for transfer in data["Transfers"]:
+              writer.writerow({csv_header: transfer[json_header] for csv_header, json_header in zip(csv_headers, json_headers)})
+    
