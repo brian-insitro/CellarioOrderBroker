@@ -3,18 +3,11 @@ import csv
 
 class WorkOrder_Dose(WorkOrder):
     order_type = "Dose"
+    protocol_id = 3
     schema = {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "properties": {
-        "OrderType": {
-          "type": "string",
-          "description": "Type of order"
-        },
-        "OrderID": {
-          "type": "string",
-          "description": "Identifier for the order"
-        },
         "Transfers": {
           "type": "array",
           "description": "Array of transfers",
@@ -55,17 +48,10 @@ class WorkOrder_Dose(WorkOrder):
               "Comment"
             ]
           }
-        },
-        "Comment": {
-          "type": "string",
-          "description": "Optional comment"
         }
       },
       "required": [
-        "OrderType",
-        "OrderID",
-        "Transfers",
-        "Comment"
+        "Transfers"
       ]
     }
 

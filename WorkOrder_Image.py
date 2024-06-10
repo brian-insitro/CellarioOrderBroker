@@ -2,19 +2,11 @@ from WorkOrder import WorkOrder
 
 class WorkOrder_Image(WorkOrder):
     order_type = "Image"
+    protocol_id = 2
     schema = {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "properties": {
-        "OrderType": {
-          "type": "string",
-          "enum": ["Image"],
-          "description": "Type of order, which is Image"
-        },
-        "OrderID": {
-          "type": "string",
-          "description": "Identifier for the order"
-        },
         "PlateBarcode": {
           "type": "string",
           "description": "Plate barcode"
@@ -42,8 +34,6 @@ class WorkOrder_Image(WorkOrder):
         }
       },
       "required": [
-        "OrderType",
-        "OrderID",
         "PlateBarcode",
         "ImagingMode",
         "Wells"
