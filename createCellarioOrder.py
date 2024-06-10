@@ -1,100 +1,115 @@
 import requests
 import json
 
-# Config
-host = 'VM-AUTO-11.insitro.local'
-#host = '172.16.14.205'
-username = 'labadmin'
-password = 'rebirth-logistic-smoke-BITUMEN'
-
-def authenticate(host, username, password, timeout=10):
-    url = f'http://{host}:8444/authenticate'
+def send_to_cellario_services(mode, endpoint, payload):
+    # Connection params
+    host = 'VM-AUTO-11.insitro.local' #'172.16.14.205'
+    port = '8444'
+    timeout = 10
     
-    payload = {
-        'username': username,
-        'password': password
-    }
-
-    headers = {
-        'Content-Type': 'application/json'
-    }
-
+    url = f'http://{host}:{port}/{endpoint}'
+    headers = { 'Content-Type': 'application/json' }
+    
     try:
-        # Send the POST request for authentication with a timeout
-        response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=timeout)
-        
-        if response.status_code == 200:
-            print("Authentication successful!")
-            print("Response:", response.json())
+        if mode == 'POST':
+            response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=timeout)
+        elif mode == 'GET':
+            response = requests.get(url, headers=headers, timeout=timeout)
+        elif mode == 'PUT':
+            response = requests.put(url, headers=headers, data=json.dumps(payload), timeout=timeout)
+        elif mode == 'DELETE':
+            response = requests.delete(url, headers=headers, timeout=timeout)
         else:
-            print(f"Failed to authenticate. Status code: {response.status_code}")
-            print("Response:", response.text)
-    except requests.exceptions.RequestException as e:
-        # Handle any exceptions that occur during the request
-        print(f"An error occurred: {e}")
-
-def check_system_status(host, timeout=10):
-    url = f'http://{host}:8444/system'
-
-    headers = {
-        'Accept': 'application/json'
-    }
-
-    try:
-        # Send the GET request with a timeout
-        response = requests.get(url, headers=headers, timeout=timeout)
-        
-        
-        # Handle the response
-        if response.status_code == 200:
-            print("System status fetched successfully!")
-            print("Response:", response.json())
-        else:
-            print(f"Failed to fetch system status. Status code: {response.status_code}")
-            print("Response:", response.text)
-    except requests.exceptions.RequestException as e:
-        # Handle any exceptions that occur during the request
-        print(f"An error occurred: {e}")
-
-def create_order(host, recipe, timeout=10):
-    url = f'http://{host}:8444/orders'
-    
-    payload = {
-        "recipe": recipe
-    }
-
-    headers = {
-        'Content-Type': 'application/json'
-    }
-    
-    try:
-        # Send the POST request to create an order with a timeout
-        response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=timeout)
+            print(f"Invalid mode: {mode}")
         
         if response.status_code == 202:
-            print("Order created successfully!")
+            print(f"{mode} request to {url} successful!")
             print("Response:", response.json())
         else:
-            print(f"Failed to create order. Status code: {response.status_code}")
+            print(f"Failed to send {mode} request to {url}. Status code: {response.status_code}")
             print("Response:", response.text)
     except requests.exceptions.RequestException as e:
-        # Handle any exceptions that occur during the request
         print(f"An error occurred: {e}")
+  
+def send_post(endpoint, payload):
+    send_to_cellario_services('POST', endpoint, payload)
 
-recipe = {
-  "Description": "This is a sample order description.",
-  "User": "labadmin",
-  "EmailRecipient": "brian@insitro.com",
-  "InventoryScan": true,
-  "ClearStorage": false,
-  "ShouldBeValidated": true,
-  "CreateDefaultParameters": true,
-  "Template": {
-    "TemplateId": 0,
-    "BatchCount": 1
-  }
+def send_get(endpoint):
+    send_to_cellario_services('GET', endpoint, None)
+
+def send_put(endpoint, payload):
+    send_to_cellario_services('PUT', endpoint, payload)
+
+def send_delete(endpoint):
+    send_to_cellario_services('DELETE', endpoint, None)
+
+
+def create_order(order, payload):
+    prefix = {
+        "Description": '{order.OrderType}',
+        "User": 'labadmin',
+        "EmailRecipient": 'brian@insitro.com',
+        "InventoryScan": True,
+        "ClearStorage": False,
+        "ShouldBeValidated": True
+    }
+    
+    send_post('/orders', json.dumps({**prefix, **payload}))
+
+template_recipe = {
+    "Template": {
+      "TemplateId": 1,
+      "BatchCount": 1,
+      "PlateSets": [
+         {
+            "PlateProtocolId": 0,
+            "LabwareType": "",
+            "PlacementProcess": "",
+            "ExplicitCount": 0,
+            "ResourcePositionId": 0,
+            "OutputResourcePositionId": 0,
+            "ExcludeThread": False,
+            "Barcodes": [
+               ""
+            ]
+         }
+      ],
+      "ScheduleDetail": {
+         "ScheduleAt": "",
+         "ProtocolStepId": 0,
+         "ScheduledAfter": 0,
+         "PlateNumber": 0
+      }
+   }
 }
 
-create_order(host, recipe)
+order_recipe = {
+    "Order": {
+      "ProtocolId": {order.protocol_id},
+      "PlateSets": [
+        {
+          "PlateProtocolId": 0,
+          "LabwareType": "",
+          "PlacementProcess": "",
+          "ExplicitCount": 0,
+          "ResourcePositionId": 0,
+          "OutputResourcePositionId": 0,
+          "ExcludeThread": False,
+          "Barcodes": [
+            ""
+          ]
+        }
+      ],
+      "ScheduleDetail": {
+        "ScheduleAt": "",
+        "ProtocolStepId": 0,
+        "ScheduledAfter": 0,
+        "PlateNumber": 0
+      }
+    }
+}
+
+#create_order(host, order_recipe)
 #check_system_status(host)
 #authenticate(host, username, password)
+
